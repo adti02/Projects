@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: meine-visitenkarte
-  namespace: default
 spec:
   replicas: 1
   selector:
@@ -14,16 +13,22 @@ spec:
         app: visitenkarte
     spec:
       containers:
-      - name: web
+      - name: nginx
         image: nginx:alpine
         ports:
         - containerPort: 80
+        volumeMounts:
+        - name: html-volume
+          mountPath: /usr/share/nginx/html  # Hier sucht Nginx standardmäßig nach Webseiten
+      volumes:
+      - name: html-volume
+        configMap:
+          name: visitenkarte-html
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: visitenkarte-service
-  namespace: default
 spec:
   type: NodePort
   selector:
@@ -31,4 +36,4 @@ spec:
   ports:
     - port: 80
       targetPort: 80
-      nodePort: 30080 # Fester Port für den lokalen Zugriff
+      nodePort: 30080
